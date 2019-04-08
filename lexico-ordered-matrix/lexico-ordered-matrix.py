@@ -12,20 +12,22 @@ def get_columns_to_be_removed(matrix):
     # the length of the set will also be the answer
     columns_to_skip = set()
 
-    for i in range(len(matrix)):
-        for j in range(len(matrix[i])):
-            if j in columns_to_skip:
+    for row in range(len(matrix)):
+        for column in range(len(matrix[row])):
+            # skip invalid columns
+            if column in columns_to_skip:
                 continue
 
             # compare column character with previously set column character
-            current = matrix[i][j]
-            prev = last_checked_chars[j]
+            current = matrix[row][column]
+            prev = last_checked_chars[column]
             if current < prev:
-                columns_to_skip.add(j)
+                columns_to_skip.add(column)
 
             # add checked column character
-            last_checked_chars[j] = current
+            last_checked_chars[column] = current
 
+    # space complexity: NxM where N is the number of rows and M is the number of columns
     print(len(columns_to_skip))
 
 
@@ -35,6 +37,15 @@ get_columns_to_be_removed(
         ["c", "b", "a"],
         ["d", "a", "f"],
         ["g", "h", "i"]
+    ]
+)
+
+# prints 2
+get_columns_to_be_removed(
+    [
+        ["a", "b", "x", "f", "g"],
+        ["f", "c", "k", "f", "k"],
+        ["h", "f", "r", "f", "b"]
     ]
 )
 
@@ -51,5 +62,15 @@ get_columns_to_be_removed(
 get_columns_to_be_removed(
     [
         ["z", "y", "x", "f", "h"]
+    ]
+)
+
+# prints 0
+get_columns_to_be_removed(
+    [
+        ["a", "b", "c", "d"],
+        ["b", "c", "d", "e"],
+        ["c", "d", "e", "f"],
+        ["d", "e", "f", "g"]
     ]
 )
