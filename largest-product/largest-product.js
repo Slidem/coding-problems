@@ -30,11 +30,6 @@ function largestProductBruteForce(numbers){
 
 // this first sorts the numbers, and than compares the first two and last element of the array.
 // if sorted in ascending order, negative numbers should be first, and positive last
-// if we don't find at least 2 negative numbers, than just return the last 3 number's product
-// 
-// if there are at least two negative numbers, 
-// second negative number should be bigger than the second to last postive number in order to return a product between 2 negative numbers and one positive
-// otherwise return last 3 number's product
 // Complexity : O(nlogn)
 function largestProductOrdered(numbers){
     
@@ -45,17 +40,10 @@ function largestProductOrdered(numbers){
     //ascending sort 
     numbers.sort((a, b) => a - b);
     
-    const firstNegative = numbers[0];         
-    const secondNegative = numbers[1];
-    const lastPositive = numbers[numbers.length-1];
-    const secondToLastPositive = numbers[numbers.length-2];
-    const thirdToLastPositive = numbers[numbers.length-3];
+    const largestProductWithNegatives = numbers[0] * numbers[1] * numbers[numbers.length-1];
+    const largestProductWithPositives = numbers[numbers.length-1] * numbers[numbers.length-2] * numbers[numbers.length-3];
 
-    if( (firstNegative < 0 || secondNegative < 0) && Math.abs(secondNegative) > secondToLastPositive && secondToLastPositive >= 0){
-        return firstNegative * secondNegative * lastPositive;
-    } else {
-        return lastPositive * secondToLastPositive * thirdToLastPositive;
-    }
+    return largestProductWithNegatives < largestProductWithPositives ? largestProductWithPositives : largestProductWithNegatives;
 }
 
 
@@ -63,31 +51,53 @@ function largestProductOrdered(numbers){
 // we can do this in O(n) time
 function largestProductLinear(numbers){
 
-    let maxNegative = numbers[0];
-    let secondToMaxNegative = numbers[0];
-    let maxPositive = numbers[0];
-    let secondToMaxPositive = numbers[0];
-    let thirdToMaxPositive = numbers[0];
+    const minimum = {
+        "minimum" : numbers[0],
+        "secondToMinimum" : numbers[1]
+    };
 
-    for(let i=0; i<numbers.length; i++){
-        const number = numbers[i];
-        if(number >= maxPositive){
-            thirdToMaxPositive = secondToMaxPositive;
-            secondToMaxPositive = maxPositive;
-            maxPositive = number;
-        }
-        if(number < 0 && number <= maxNegative){
-            secondToMaxNegative = maxNegative;
-            maxNegative = number;
-        }        
+    const maximum = {
+        "max" : numbers[0],
+        "secondToMax" : numbers[1],
+        "thirdToMax" : numbers[2]
+    };
+    
+    computeMinimum(minimum, numbers[2]);
+    computeMaximum(maximum, null);
+    for(let i=3; i<numbers.length; i++){
+        computeMinimum(minimum, numbers[i]);
+        computeMaximum(maximum, numbers[i]);
     }
 
-    if( (maxNegative < 0 || secondToMaxNegative < 0) && Math.abs(secondToMaxNegative) > secondToMaxPositive && secondToMaxPositive >= 0){
-        return maxNegative * secondToMaxNegative * maxPositive;
-    } else {
-        return maxPositive * secondToMaxPositive * thirdToMaxPositive;
+    const largestProductWithNegatives = minimum.minimum * minimum.secondToMinimum * maximum.max;
+    const largestProductWithPositives = maximum.max * maximum.secondToMax * maximum.thirdToMax;
+    return largestProductWithNegatives < largestProductWithPositives ? largestProductWithPositives : largestProductWithNegatives;
+}
+
+function computeMinimum(current, nb){
+    if(!nb && current.minimum > current.secondToMinimum){
+        const aux = current.minimum;
+        current.minimum = current.secondToMinimum;
+        current.secondToMinimum = aux;
     }
-        
+
+    if(nb < current.minimum){
+       current.secondToMinimum = current.minimum; 
+       current.minimum = nb;
+    } else if(nb < current.secondToMinimum){
+       current.secondToMinimum = nb;  
+    }
+}
+
+function computeMaximum(current, nb){
+    const aux = [current.max, current.secondToMax, current.thirdToMax];    
+    if(nb && aux.indexOf){
+        aux.push(nb);
+    }
+    aux.sort((a, b) => a - b);
+    current.max = aux[aux.length - 1];
+    current.secondToMax = aux[aux.length - 2];
+    current.thirdToMax = aux[aux.length - 3];
 }
 
 
