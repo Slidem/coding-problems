@@ -24,7 +24,7 @@ public class LazyBartender {
         drinkCustomersMap = new HashMap<>();
         preferences.forEach((customerId, drinkPreferences) -> {
             for (Integer drink : drinkPreferences) {
-                drinkCustomersMap.compute(drink, (d, cs) -> computeCustomers(d, cs, customerId));
+                drinkCustomersMap.compute(drink, (d, cs) -> computeCustomers(cs, customerId));
             }
         });
 
@@ -36,7 +36,7 @@ public class LazyBartender {
         System.out.println(minimumDrinkCombination.drinks);
     }
 
-    private Set<Integer> computeCustomers(Integer drinkId, Set<Integer> customers, Integer customerId) {
+    private Set<Integer> computeCustomers(Set<Integer> customers, Integer customerId) {
         if (isNull(customers)) {
             customers = new HashSet<>();
         }
@@ -100,19 +100,6 @@ public class LazyBartender {
                     .flatMap(Set::stream)
                     .collect(Collectors.toSet())
                     .equals(customers);
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            DrinkCombination that = (DrinkCombination) o;
-            return Objects.equals(drinks, that.drinks);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(drinks);
         }
     }
 
