@@ -17,8 +17,6 @@ public class LazyBartender {
 
     private Map<Integer, Set<Integer>> drinkCustomersMap;
 
-    private Set<DrinkCombination> drinkCombinationsComputed;
-
     public LazyBartender(Map<Integer, List<Integer>> preferences) {
         if(isNull(preferences) || preferences.isEmpty()){
             throw new IllegalArgumentException();
@@ -49,20 +47,17 @@ public class LazyBartender {
     private void searchMinimumDrinksRequired() {
         //suppose worst case scenario
         this.minimumDrinksRequired = drinkCustomersMap.size();
-        //used for memoization
-        this.drinkCombinationsComputed = new HashSet<>();
         //do recursive search
         searchMinimumDrinksRequired(drinkCustomersMap.keySet().toArray(new Integer[0]), -1, new DrinkCombination());
     }
 
     private void searchMinimumDrinksRequired(Integer[] drinks, int drinkIdx, DrinkCombination combination) {
-        if (drinkCombinationsComputed.contains(combination) || combination.drinks.size() >= minimumDrinksRequired) {
+        if (combination.drinks.size() >= minimumDrinksRequired) {
             return;
         }
 
         if (combination.satisfiesAllCustomers()) {
             minimumDrinkCombination = combination.copy();
-            drinkCombinationsComputed.add(minimumDrinkCombination);
             minimumDrinksRequired = combination.drinks.size();
             return;
         }
@@ -120,6 +115,8 @@ public class LazyBartender {
             return Objects.hash(drinks);
         }
     }
+
+    // -------------------- TEST --------------------------------------
 
     public static void main(String[] args) {
         new LazyBartender(testA()).printSolution(); //[5, 3]
