@@ -62,6 +62,7 @@ function largestProductLinear(numbers){
         "thirdToMax" : numbers[2]
     };
     
+    computeMinimum(minimum, null);
     computeMinimum(minimum, numbers[2]);
     computeMaximum(maximum, null);
     for(let i=3; i<numbers.length; i++){
@@ -91,13 +92,13 @@ function computeMinimum(current, nb){
 
 function computeMaximum(current, nb){
     const aux = [current.max, current.secondToMax, current.thirdToMax];    
-    if(nb && aux.indexOf){
+    if(nb){
         aux.push(nb);
     }
-    aux.sort((a, b) => a - b);
-    current.max = aux[aux.length - 1];
-    current.secondToMax = aux[aux.length - 2];
-    current.thirdToMax = aux[aux.length - 3];
+    aux.sort((a, b) => b - a);
+    current.max = aux[0];
+    current.secondToMax = aux[1];
+    current.thirdToMax = aux[2];
 }
 
 
