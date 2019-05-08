@@ -63,7 +63,7 @@ public class DiningPhilosophers {
 
 
         private void printState(String state){
-            System.out.println("Philospher " + name + " " + state);
+            System.out.println("Philosopher " + name + " " + state);
         }
 
         private void randomWait(){
