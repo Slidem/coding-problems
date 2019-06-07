@@ -1,8 +1,9 @@
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
+import java.time.Instant;
 import java.util.*;
 import java.util.function.IntUnaryOperator;
-import java.util.stream.Collectors;
 
 import static java.lang.Integer.parseInt;
 
@@ -26,54 +27,76 @@ public class CircularLock {
 
     private static final IntUnaryOperator ROTATE_UP_FUNCTION = v -> v == 9 ? 0 : v + 1;
 
-    String target;
+    private static final String ZERO = "000";
 
-    Set<String> deadEnds;
+    private String target;
 
-    Set<Move> computed;
+    private Set<String> deadEnds;
 
-    Move found;
+    private Set<Move> computed;
 
-    List<Move> minimumMoves;
+    private Move found;
 
-    @SuppressWarnings("unchecked")
-    public CircularLock(String jsonInput) {
+    CircularLock(String jsonInput) {
         Map<String, Object> mapInput = GSON.fromJson(jsonInput, new TypeToken<Map<String, Object>>(){}.getType());
         target = (String) mapInput.get("target");
         deadEnds = new HashSet<>((Collection<? extends String>) mapInput.get("deadends"));
-        find();
-        prepareResult();
+        findWithTimePrint();
     }
 
-    public CircularLock(String target, Set<String> deadEnds) {
+    CircularLock(String target, Set<String> deadEnds) {
         this.target = target;
         this.deadEnds = deadEnds;
-        find();
-        prepareResult();
+        findWithTimePrint();
     }
 
-    public void printMinimumNumberOfMoves(){
-        if (Objects.isNull(found)) {
-            return;
-        }
-        System.out.println("Minimum number of moves required: " + minimumMoves.size());
-    }
+    // -------------------------------------------------------------------------------------------
 
-    public void printMinimumMoves(){
+    void printMinimumNumberOfMoves(){
         if (Objects.isNull(found)) {
             System.out.println("None");
             return;
         }
-        System.out.println(minimumMoves.stream().map(Object::toString).collect(Collectors.joining(" -> ")) + " -> " + target);
+        System.out.println("Minimum number of moves required: " + (found.getRootPathLenght() - 1));
+    }
+
+    void printMinimumMoves(){
+        if (Objects.isNull(found)) {
+            System.out.println("None");
+            return;
+        }
+        Move m = found;
+        while (Objects.nonNull(m)) {
+            System.out.print(m.value);
+            if (!m.value.equals(target)) {
+                System.out.print(" -> ");
+            } else {
+                System.out.println();
+            }
+            m = m.prev;
+        }
+    }
+
+    // --------------------------------------------------------------------------- COMPUTATION
+
+    private void findWithTimePrint(){
+        long start = Instant.now().toEpochMilli();
+        find();
+        long end = Instant.now().toEpochMilli();
+        System.out.println("Computed in " + (end - start) + " ms");
     }
 
     private void find() {
+        if (deadEnds.contains(target)) {
+            return;
+        }
+
         computed = new HashSet<>();
         PriorityQueue<Move> pq = new PriorityQueue<>();
-        pq.add(new Move(target));
+        pq.add(new Move(target, null));
         while (!pq.isEmpty()) {
             Move m = pq.poll();
-            if (m.value.equals("000")) {
+            if (m.value.equals(ZERO)) {
                 found = m;
                 return;
             }
@@ -81,51 +104,15 @@ public class CircularLock {
         }
     }
 
-    private void prepareResult() {
-        if (Objects.isNull(found)) {
-            return;
-        }
-        minimumMoves = new LinkedList<>();
-        Move m = found;
-        while (Objects.nonNull(m.prev)) {
-            minimumMoves.add(m);
-            m = m.prev;
-        }
-    }
-
     private Collection<? extends Move> computeNextPossibleMoves(Move m) {
         List<Move> nextPossibleMoves = new ArrayList<>();
-        leftUp(m, nextPossibleMoves);
-        middleUp(m, nextPossibleMoves);
-        rightUp(m, nextPossibleMoves);
-        leftDown(m, nextPossibleMoves);
-        middleDown(m, nextPossibleMoves);
-        rightDown(m, nextPossibleMoves);
-        return nextPossibleMoves;
-    }
-
-    private void leftUp(Move m, List<Move> nextPossibleMoves) {
         rotate(m, nextPossibleMoves, ROTATE_UP_FUNCTION, 0);
-    }
-
-    private void middleUp(Move m, List<Move> nextPossibleMoves) {
         rotate(m, nextPossibleMoves, ROTATE_UP_FUNCTION, 1);
-    }
-
-    private void rightUp(Move m, List<Move> nextPossibleMoves) {
         rotate(m, nextPossibleMoves, ROTATE_UP_FUNCTION, 2);
-    }
-
-    private void leftDown(Move m, List<Move> nextPossibleMoves) {
         rotate(m, nextPossibleMoves, ROTATE_DOWN_FUNCTION, 0);
-    }
-
-    private void middleDown(Move m, List<Move> nextPossibleMoves) {
         rotate(m, nextPossibleMoves, ROTATE_DOWN_FUNCTION, 1);
-    }
-
-    private void rightDown(Move m, List<Move> nextPossibleMoves) {
         rotate(m, nextPossibleMoves, ROTATE_DOWN_FUNCTION, 2);
+        return nextPossibleMoves;
     }
 
     private void rotate(Move m, List<Move> nextPossibleMoves, IntUnaryOperator rotateFunction, int idx) {
@@ -143,19 +130,27 @@ public class CircularLock {
         return String.valueOf(chars);
     }
 
+    // ------------------------------------------------------------------- Helper class
+
     class Move implements Comparable<Move> {
 
         String value;
 
         Move prev;
 
-        Move(String value) {
-            this(value, null);
-        }
-
         Move(String value, Move prev) {
             this.value = value;
             this.prev = prev;
+        }
+
+        int getRootPathLenght(){
+            int length = 0;
+            Move m = this;
+            while (Objects.nonNull(m)) {
+                length++;
+                m = m.prev;
+            }
+            return length;
         }
 
         @Override
@@ -177,38 +172,22 @@ public class CircularLock {
 
         @Override
         public int compareTo(Move that) {
-            int thisLeftValue = computeDistanceToZero(parseInt(String.valueOf(this.value.charAt(0))));
-            int thisMiddleValue = computeDistanceToZero(parseInt(String.valueOf(this.value.charAt(1))));
-            int thisRightValue = computeDistanceToZero(parseInt(String.valueOf(this.value.charAt(2))));
+            int distanceToZeroDiff = computeDistanceToZero(this.value) - computeDistanceToZero(that.value);
+            return distanceToZeroDiff != 0 ? distanceToZeroDiff : (this.getRootPathLenght() - that.getRootPathLenght());
+        }
 
-            int thatLeftValue = computeDistanceToZero(parseInt(String.valueOf(that.value.charAt(0))));
-            int thatMiddleValue = computeDistanceToZero(parseInt(String.valueOf(that.value.charAt(1))));
-            int thatRightValue = computeDistanceToZero(parseInt(String.valueOf(that.value.charAt(2))));
-
-            if(thisLeftValue < thatLeftValue){
-                return -1;
-            }
-            if (thisLeftValue > thatLeftValue) {
-                return 1;
-            }
-            if (thisMiddleValue < thatMiddleValue) {
-                return -1;
-            }
-            if (thisMiddleValue > thatMiddleValue) {
-                return 1;
-            }
-            return thisRightValue - thatRightValue;
+        private int computeDistanceToZero(String value) {
+            return computeDistanceToZero(parseInt(String.valueOf(value.charAt(0)))) +
+                    computeDistanceToZero(parseInt(String.valueOf(value.charAt(1)))) +
+                    computeDistanceToZero(parseInt(String.valueOf(value.charAt(2))));
         }
 
         private int computeDistanceToZero(int value) {
             return value > 5 ? 10 - value : value;
         }
-
-        @Override
-        public String toString() {
-            return value;
-        }
     }
+
+    // ---------------------------------------------------------------------------------------- TEST
 
     public static void main(String[] args) {
         CircularLock circularLock = new CircularLock("{\n" +
