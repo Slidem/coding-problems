@@ -125,7 +125,7 @@ public class Pyramid {
     }
 
     public static void main(String[] args) {
-        Pyramid pyramid = new Pyramid("[9, 0, 1]");
+        Pyramid pyramid = new Pyramid(Arrays.toString(generateRandomArray(5000)));
         pyramid.printMinimumCost();
         pyramid.printMinimumCostPyramid();
 //        new Pyramid("[1, 1, 3, 3, 2, 1, 0, 1, 2, 3, 4, 5, 2, 2, 4, 3, 2, 1]")
@@ -137,6 +137,14 @@ public class Pyramid {
 //        new Pyramid("[10, 0, 3, 2, 1, 0, 88, 0, 2, 0, 34, 0, 1, 4, 3, 0, 4, 2, 2, 2, 0]");
 //        new Pyramid("[9, 9, 9, 9, 9, 9]");
 //        new Pyramid("[1, 1, 1, 1, 1, 1, 1]");
+    }
+
+    private static int[] generateRandomArray(int length){
+        int[] array = new int[length];
+        for (int i = 0; i < length - 1; i++) {
+            array[i] = (int)(Math.random() * 1000);
+        }
+        return array;
     }
 
 
