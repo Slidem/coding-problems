@@ -10,9 +10,8 @@ class Solution:
 
         for pos, nb in enumerate(nums, start=0):
             if nb != nums[last_moved_pos]:
-                swap_with = last_moved_pos + 1
-                nums[swap_with], nums[pos] = nums[pos], nums[swap_with]
-                last_moved_pos = swap_with
+                nums[last_moved_pos + 1] = nums[pos]
+                last_moved_pos += 1
 
         return last_moved_pos + 1
 
