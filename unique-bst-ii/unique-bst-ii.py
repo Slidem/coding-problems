@@ -4,7 +4,6 @@ class TreeNode:
         self.left = left
         self.right = right
 
-
 class Solution:
     def generateTrees(self, n):
 
@@ -70,27 +69,27 @@ def go_left(node, child):
     node.left = child
 
 
+# test methods
+def print_pre_order(root):
+    print(generate_pre_order_list(root))
 
-def print_in_order(root):
-    print(generate_in_order_list(root))
 
-
-def generate_in_order_list(root):
+def generate_pre_order_list(root):
     l = []
-    add_in_order(root, l)
+    add_pre_order_into_list(root, l)
     return l
 
 
-def add_in_order(n, l):
+def add_pre_order_into_list(n, l):
     if not n:
         l.append(None)
         return
 
     l.append(n.val)
-    add_in_order(n.left, l) 
-    add_in_order(n.right, l)
+    add_pre_order_into_list(n.left, l) 
+    add_pre_order_into_list(n.right, l)
 
 
 generated_values = Solution().generateTrees(3)
 for g in generated_values:
-    print_in_order(g)
+    print_pre_order(g)
