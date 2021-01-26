@@ -22,5 +22,6 @@ function generate(result, str, open, close) {
     }
 }
 
+
 console.log(generateParenthesis(4));
 
